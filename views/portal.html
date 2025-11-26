@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Portal - HealLink</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .portal-container {
+            padding-top: 100px;
+            padding-bottom: 50px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+        }
+
+        .sidebar {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            height: fit-content;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-menu a {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: #666;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: var(--light-color);
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .welcome-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.2);
+        }
+
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .card h3 {
+            margin-bottom: 1rem;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+
+        .appointment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .appointment-item:last-child {
+            border-bottom: none;
+        }
+
+        .appointment-date {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-upcoming {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <header class="header">
+        <div class="container header-container">
+            <a href="/" class="logo">HealLink</a>
+            <div class="user-menu">
+                <button onclick="handleLogout()" class="btn btn-outline"
+                    style="padding: 0.5rem 1rem; font-size: 0.9rem;">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container portal-container">
+        <div class="dashboard-grid">
+            <aside class="sidebar">
+                <ul class="sidebar-menu">
+                    <li><a href="#" class="active">Dashboard</a></li>
+                    <li><a href="#">Appointments</a></li>
+                    <li><a href="#">Medical Records</a></li>
+                    <li><a href="#">Prescriptions</a></li>
+                    <li><a href="#">Messages</a></li>
+                    <li><a href="#">Settings</a></li>
+                </ul>
+            </aside>
+
+            <main class="main-content">
+                <div class="welcome-card fade-in-up">
+                    <h2 id="welcomeMsg">Welcome back!</h2>
+                    <p>Manage your health journey with ease.</p>
+                </div>
+
+                <div class="card fade-in-up delay-100">
+                    <h3>Upcoming Appointments</h3>
+                    <div class="appointment-list">
+                        <div class="appointment-item">
+                            <div>
+                                <div class="appointment-date">Tomorrow, 10:00 AM</div>
+                                <div>Dr. Sarah Chen - Neurologist</div>
+                            </div>
+                            <span class="status-badge status-upcoming">Confirmed</span>
+                        </div>
+                        <div class="appointment-item">
+                            <div>
+                                <div class="appointment-date">Dec 05, 2:30 PM</div>
+                                <div>Dr. James Wilson - Cardiologist</div>
+                            </div>
+                            <span class="status-badge status-upcoming">Pending</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card fade-in-up delay-200">
+                    <h3>Recent Activity</h3>
+                    <p>You have no new notifications.</p>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Fetch user data on load
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/api/user');
+                const data = await response.json();
+                if (data.user) {
+                    document.getElementById('welcomeMsg').textContent = `Welcome back, ${data.user.fullName}!`;
+                } else {
+                    window.location.href = '/login';
+                }
+            } catch (err) {
+                console.error('Error fetching user data:', err);
+            }
+        });
+
+        async function handleLogout() {
+            try {
+                const response = await fetch('/api/logout', { method: 'POST' });
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = data.redirect;
+                }
+            } catch (err) {
+                console.error('Logout failed:', err);
+            }
+        }
+    </script>
+    <script src="/script.js"></script>
+</body>
+
+</html>
