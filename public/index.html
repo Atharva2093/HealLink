@@ -29,7 +29,7 @@
                     <li><a href="#testimonials">Stories</a></li>
                 </ul>
             </nav>
-            <a href="/patient-portal" class="btn btn-primary">Patient Portal</a>
+            <a href="views/login.html" class="btn btn-primary">Patient Portal</a>
         </div>
     </header>
 
@@ -365,6 +365,31 @@
     </footer>
 
     <script src="script.js"></script>
+    <script>
+        // Check if user is logged in and update Patient Portal button
+        document.addEventListener('DOMContentLoaded', () => {
+            const portalBtn = document.querySelector('.btn-primary');
+            if (localStorage.getItem('isLoggedIn') === 'true') {
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                portalBtn.textContent = `Portal (${userData.fullName || 'User'})`;
+                portalBtn.href = 'views/portal.html';
+                
+                // Add logout option
+                const logoutLink = document.createElement('a');
+                logoutLink.textContent = 'Logout';
+                logoutLink.href = '#';
+                logoutLink.className = 'btn btn-outline';
+                logoutLink.style.marginLeft = '0.5rem';
+                logoutLink.onclick = (e) => {
+                    e.preventDefault();
+                    localStorage.removeItem('isLoggedIn');
+                    localStorage.removeItem('userData');
+                    location.reload();
+                };
+                portalBtn.parentNode.appendChild(logoutLink);
+            }
+        });
+    </script>
 </body>
 
 </html>
