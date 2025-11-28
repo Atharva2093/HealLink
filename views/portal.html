@@ -9,7 +9,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../public/style.css">
+    <script>
+        // Check if user is authenticated
+        if (!localStorage.getItem('isLoggedIn') || localStorage.getItem('isLoggedIn') !== 'true') {
+            // Redirect to login if not authenticated
+            window.location.href = 'login.html';
+        }
+    </script>
     <style>
         .portal-container {
             padding-top: 100px;
@@ -53,6 +60,22 @@
             background: var(--light-color);
             color: var(--primary-color);
             font-weight: 500;
+        }
+        
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 1rem;
+            font-weight: 600;
+        }
+        
+        .logout-btn:hover {
+            background: #c82333;
         }
 
         .main-content {
@@ -130,11 +153,13 @@
             <aside class="sidebar">
                 <ul class="sidebar-menu">
                     <li><a href="#" class="active">Dashboard</a></li>
-                    <li><a href="#">Appointments</a></li>
-                    <li><a href="#">Medical Records</a></li>
-                    <li><a href="#">Prescriptions</a></li>
-                    <li><a href="#">Messages</a></li>
-                    <li><a href="#">Settings</a></li>
+                    <li><a href="#appointments">Appointments</a></li>
+                    <li><a href="#medical-records">Medical Records</a></li>
+                    <li><a href="#prescriptions">Prescriptions</a></li>
+                    <li><a href="#health-predictor" onclick="openHealthPredictor()">Health Predictor</a></li>
+                    <li><a href="#messages">Messages</a></li>
+                    <li><a href="#settings">Settings</a></li>
+                    <li><a href="../" style="border-top: 1px solid #eee; margin-top: 1rem; padding-top: 1rem;">← Back to Main Site</a></li>
                 </ul>
             </aside>
 
@@ -173,34 +198,79 @@
     </div>
 
     <script>
-        // Fetch user data on load
+        // Check authentication and fetch user data on load
         document.addEventListener('DOMContentLoaded', async () => {
+            // Check if user is authenticated
+            if (!localStorage.getItem('isLoggedIn') || localStorage.getItem('isLoggedIn') !== 'true') {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Get user data from localStorage
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            if (userData.fullName) {
+                document.getElementById('welcomeMsg').textContent = `Welcome back, ${userData.fullName}!`;
+            }
+
+            // Try to fetch fresh user data from server
             try {
                 const response = await fetch('/api/user');
-                const data = await response.json();
-                if (data.user) {
-                    document.getElementById('welcomeMsg').textContent = `Welcome back, ${data.user.fullName}!`;
-                } else {
-                    window.location.href = '/login';
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.user) {
+                        document.getElementById('welcomeMsg').textContent = `Welcome back, ${data.user.fullName}!`;
+                        localStorage.setItem('userData', JSON.stringify(data.user));
+                    }
                 }
             } catch (err) {
-                console.error('Error fetching user data:', err);
+                console.log('Server unavailable, using cached data');
             }
         });
 
         async function handleLogout() {
             try {
+                // Clear local storage
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('userData');
+                
+                // Try server logout
                 const response = await fetch('/api/logout', { method: 'POST' });
-                const data = await response.json();
-                if (data.success) {
-                    window.location.href = data.redirect;
+                if (response.ok) {
+                    const data = await response.json();
+                    window.location.href = data.redirect || 'login.html';
+                } else {
+                    window.location.href = 'login.html';
                 }
             } catch (err) {
-                console.error('Logout failed:', err);
+                console.log('Server unavailable, redirecting to login');
+                window.location.href = 'login.html';
             }
         }
+
+        // Open health predictor in a new tab/window
+        function openHealthPredictor() {
+            window.open('../#health-predictor', '_blank');
+        }
+
+        // Add fade-in animations
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in-up').forEach(el => observer.observe(el));
     </script>
-    <script src="/script.js"></script>
+    <script src="../public/script.js"></script>
 </body>
 
 </html>
