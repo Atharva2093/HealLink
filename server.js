@@ -27,6 +27,7 @@ const db = new sqlite3.Database('./database.db', (err) => {
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static('public'));
+app.use('/views', express.static('views')); // Serve views directory statically
 app.use(session({
     secret: 'heallink-secret-key', // In production, use environment variable
     resave: false,
