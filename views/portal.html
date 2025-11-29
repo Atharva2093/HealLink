@@ -134,6 +134,157 @@
             background: #e3f2fd;
             color: #1976d2;
         }
+
+        /* Additional Portal Styles */
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .quick-action-btn {
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-align: left;
+            width: 100%;
+        }
+
+        .quick-action-btn:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(15, 118, 110, 0.15);
+        }
+
+        .quick-action-btn .icon {
+            font-size: 2rem;
+        }
+
+        .quick-action-btn .title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+
+        .quick-action-btn .subtitle {
+            font-size: 0.875rem;
+            color: #666;
+        }
+
+        .predictor-form {
+            margin-top: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+        }
+
+        .form-hint {
+            display: block;
+            margin-top: 0.25rem;
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .analyze-btn {
+            background: linear-gradient(135deg, var(--primary-color), #059669);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(15, 118, 110, 0.3);
+        }
+
+        .analyze-btn:disabled {
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.7;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Navigation styling */
+        .nav-link.active {
+            background: var(--light-color) !important;
+            color: var(--primary-color) !important;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                order: 2;
+                margin-top: 2rem;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
@@ -152,46 +303,160 @@
         <div class="dashboard-grid">
             <aside class="sidebar">
                 <ul class="sidebar-menu">
-                    <li><a href="#" class="active">Dashboard</a></li>
-                    <li><a href="#appointments">Appointments</a></li>
-                    <li><a href="#medical-records">Medical Records</a></li>
-                    <li><a href="#prescriptions">Prescriptions</a></li>
-                    <li><a href="#health-predictor" onclick="openHealthPredictor()">Health Predictor</a></li>
-                    <li><a href="#messages">Messages</a></li>
-                    <li><a href="#settings">Settings</a></li>
-                    <li><a href="../" style="border-top: 1px solid #eee; margin-top: 1rem; padding-top: 1rem;">← Back to Main Site</a></li>
+                    <li><a href="#dashboard" class="nav-link active" data-section="dashboard">📊 Dashboard</a></li>
+                    <li><a href="#health-predictor" class="nav-link" data-section="health-predictor">🔬 Health AI</a></li>
+                    <li><a href="#appointments" class="nav-link" data-section="appointments">📅 Appointments</a></li>
+                    <li><a href="#medical-records" class="nav-link" data-section="medical-records">📋 Medical Records</a></li>
+                    <li><a href="#prescriptions" class="nav-link" data-section="prescriptions">💊 Prescriptions</a></li>
+                    <li><a href="#messages" class="nav-link" data-section="messages">💬 Messages</a></li>
+                    <li><a href="#settings" class="nav-link" data-section="settings">⚙️ Settings</a></li>
+                    <li><a href="../public/index.html" style="border-top: 1px solid #eee; margin-top: 1rem; padding-top: 1rem;">🏠 Back to Main Site</a></li>
                 </ul>
+                <button class="logout-btn" onclick="handleLogout()">🚪 Logout</button>
             </aside>
 
             <main class="main-content">
-                <div class="welcome-card fade-in-up">
-                    <h2 id="welcomeMsg">Welcome back!</h2>
-                    <p>Manage your health journey with ease.</p>
+                <!-- Dashboard Section (Default) -->
+                <div id="dashboard-section" class="content-section active">
+                    <div class="welcome-card fade-in-up">
+                        <h2 id="welcomeMsg">Welcome back!</h2>
+                        <p>Manage your health journey with ease.</p>
+                    </div>
+
+                    <div class="card fade-in-up delay-100">
+                        <h3>🎯 Quick Actions</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                            <button onclick="showSection('health-predictor')" class="quick-action-btn">
+                                <span class="icon">🔬</span>
+                                <div>
+                                    <div class="title">Health AI Analysis</div>
+                                    <div class="subtitle">Get instant health predictions</div>
+                                </div>
+                            </button>
+                            <button onclick="showSection('appointments')" class="quick-action-btn">
+                                <span class="icon">📅</span>
+                                <div>
+                                    <div class="title">Book Appointment</div>
+                                    <div class="subtitle">Schedule with specialists</div>
+                                </div>
+                            </button>
+                            <button onclick="showSection('medical-records')" class="quick-action-btn">
+                                <span class="icon">📋</span>
+                                <div>
+                                    <div class="title">Medical Records</div>
+                                    <div class="subtitle">View your health history</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card fade-in-up delay-200">
+                        <h3>Upcoming Appointments</h3>
+                        <div class="appointment-list">
+                            <div class="appointment-item">
+                                <div>
+                                    <div class="appointment-date">Tomorrow, 10:00 AM</div>
+                                    <div>Dr. Sarah Chen - Neurologist</div>
+                                </div>
+                                <span class="status-badge status-upcoming">Confirmed</span>
+                            </div>
+                            <div class="appointment-item">
+                                <div>
+                                    <div class="appointment-date">Dec 05, 2:30 PM</div>
+                                    <div>Dr. James Wilson - Cardiologist</div>
+                                </div>
+                                <span class="status-badge status-upcoming">Pending</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card fade-in-up delay-300">
+                        <h3>Recent Activity</h3>
+                        <p>You have no new notifications.</p>
+                    </div>
                 </div>
 
-                <div class="card fade-in-up delay-100">
-                    <h3>Upcoming Appointments</h3>
-                    <div class="appointment-list">
-                        <div class="appointment-item">
-                            <div>
-                                <div class="appointment-date">Tomorrow, 10:00 AM</div>
-                                <div>Dr. Sarah Chen - Neurologist</div>
+                <!-- Health Predictor Section -->
+                <div id="health-predictor-section" class="content-section" style="display: none;">
+                    <div class="card fade-in-up">
+                        <h3>🔬 AI-Powered Health Analysis</h3>
+                        <p>Get comprehensive health assessments powered by advanced machine learning technology.</p>
+                        
+                        <div class="predictor-form">
+                            <div class="form-group">
+                                <label for="portal-symptomsInput">Describe Your Symptoms:</label>
+                                <input type="text" id="portal-symptomsInput" placeholder="e.g. fever, cough, headache, sore throat" class="form-input">
+                                <small class="form-hint">Separate multiple symptoms with commas</small>
                             </div>
-                            <span class="status-badge status-upcoming">Confirmed</span>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="portal-ageInput">Age:</label>
+                                    <input type="number" id="portal-ageInput" placeholder="Enter age" min="1" max="120" class="form-input">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="portal-genderInput">Gender:</label>
+                                    <select id="portal-genderInput" class="form-input">
+                                        <option value="">Select gender</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button onclick="portalPredictDisease()" class="analyze-btn">
+                                <span id="portal-btn-text">🔬 Analyze Symptoms</span>
+                                <span id="portal-btn-loading" style="display: none;">🔄 Analyzing...</span>
+                            </button>
                         </div>
-                        <div class="appointment-item">
-                            <div>
-                                <div class="appointment-date">Dec 05, 2:30 PM</div>
-                                <div>Dr. James Wilson - Cardiologist</div>
-                            </div>
-                            <span class="status-badge status-upcoming">Pending</span>
+
+                        <div id="portal-resultBox" style="display: none; margin-top: 2rem;">
+                            <!-- Results will be populated by JavaScript -->
                         </div>
                     </div>
                 </div>
 
-                <div class="card fade-in-up delay-200">
-                    <h3>Recent Activity</h3>
-                    <p>You have no new notifications.</p>
+                <!-- Appointments Section -->
+                <div id="appointments-section" class="content-section" style="display: none;">
+                    <div class="card fade-in-up">
+                        <h3>📅 Appointment Management</h3>
+                        <p>Book and manage your medical appointments.</p>
+                        <button class="btn-primary" style="margin-top: 1rem;">Book New Appointment</button>
+                    </div>
+                </div>
+
+                <!-- Medical Records Section -->
+                <div id="medical-records-section" class="content-section" style="display: none;">
+                    <div class="card fade-in-up">
+                        <h3>📋 Medical Records</h3>
+                        <p>View and download your medical history.</p>
+                    </div>
+                </div>
+
+                <!-- Prescriptions Section -->
+                <div id="prescriptions-section" class="content-section" style="display: none;">
+                    <div class="card fade-in-up">
+                        <h3>💊 Prescriptions</h3>
+                        <p>Manage your current and past prescriptions.</p>
+                    </div>
+                </div>
+
+                <!-- Messages Section -->
+                <div id="messages-section" class="content-section" style="display: none;">
+                    <div class="card fade-in-up">
+                        <h3>💬 Messages</h3>
+                        <p>Communicate with your healthcare providers.</p>
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
+                <div id="settings-section" class="content-section" style="display: none;">
+                    <div class="card fade-in-up">
+                        <h3>⚙️ Settings</h3>
+                        <p>Manage your account preferences and privacy settings.</p>
+                    </div>
                 </div>
             </main>
         </div>
@@ -225,7 +490,254 @@
             } catch (err) {
                 console.log('Server unavailable, using cached data');
             }
+
+            // Initialize navigation
+            initializeNavigation();
+
+            // Handle URL hash navigation
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                showSection(hash);
+            }
         });
+
+        // Initialize navigation system
+        function initializeNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const section = link.dataset.section;
+                    showSection(section);
+                    
+                    // Update active state
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                });
+            });
+        }
+
+        // Show specific content section
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+                section.style.display = 'none';
+            });
+
+            // Show requested section
+            const targetSection = document.getElementById(sectionName + '-section');
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                targetSection.classList.add('active');
+            }
+
+            // Update URL hash
+            window.location.hash = sectionName;
+
+            // Update navigation active state
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.section === sectionName) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Portal-specific Health Predictor function
+        async function portalPredictDisease() {
+            const symptomsInput = document.getElementById('portal-symptomsInput').value;
+            const ageInput = document.getElementById('portal-ageInput').value;
+            const genderInput = document.getElementById('portal-genderInput').value;
+            const resultBox = document.getElementById('portal-resultBox');
+
+            // Enhanced validation
+            if (!symptomsInput.trim()) {
+                alert('Please enter at least one symptom.');
+                return;
+            }
+
+            // Show loading state
+            const btnText = document.getElementById('portal-btn-text');
+            const btnLoading = document.getElementById('portal-btn-loading');
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline';
+
+            try {
+                // Prepare symptoms array
+                const symptoms = symptomsInput.split(/[,;\\n]+/).map(s => s.trim()).filter(s => s.length > 0);
+                
+                if (symptoms.length === 0) {
+                    throw new Error('Please enter valid symptoms.');
+                }
+
+                // Try ML model API
+                let mlSuccess = false;
+                try {
+                    const response = await fetch("http://127.0.0.1:8001/predict", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ symptoms })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (!data.error) {
+                            displayPortalMLResults(data);
+                            mlSuccess = true;
+                        }
+                    }
+                } catch (mlError) {
+                    console.log('ML API unavailable, using fallback...');
+                }
+
+                // Fallback if ML fails
+                if (!mlSuccess) {
+                    displayPortalFallbackResults(symptoms);
+                }
+
+            } catch (error) {
+                console.error('Prediction error:', error);
+                displayPortalErrorResult(error.message);
+            } finally {
+                // Restore button state
+                btnText.style.display = 'inline';
+                btnLoading.style.display = 'none';
+            }
+        }
+
+        // Display ML results in portal
+        function displayPortalMLResults(data) {
+            const resultBox = document.getElementById('portal-resultBox');
+            
+            resultBox.innerHTML = `
+                <div class="result-header">
+                    <h3>🎯 AI Health Analysis Complete</h3>
+                    <div class="confidence-badge">Confidence: ${(data["Confidence"] * 100).toFixed(1)}%</div>
+                </div>
+                
+                <div class="result-section">
+                    <h4>🔬 Primary Prediction</h4>
+                    <p><strong>Condition:</strong> ${data["Predicted Disease"]}</p>
+                    <p><strong>Risk Level:</strong> <span class="risk-${data["Risk Level"].toLowerCase()}">${data["Risk Level"]}</span></p>
+                    <p><strong>Severity Score:</strong> ${data["Severity Score"]}/20</p>
+                </div>
+
+                <div class="result-section">
+                    <h4>📖 Medical Information</h4>
+                    <div class="description-text">
+                        ${data["Description"]}
+                    </div>
+                </div>
+
+                <div class="result-section">
+                    <h4>⚕️ Recommended Specialist</h4>
+                    <div class="specialist-info">
+                        <strong>${getSpecialistForDisease(data["Predicted Disease"])}</strong>
+                        <p>Based on your predicted condition</p>
+                    </div>
+                </div>
+
+                <div class="result-section">
+                    <h4>🛡️ Recommended Precautions</h4>
+                    <ul>
+                        ${data["Precautions"].map(p => `<li>${p}</li>`).join("")}
+                    </ul>
+                </div>
+
+                <div class="result-actions">
+                    <button onclick="showSection('appointments')" class="btn-primary">Book Appointment</button>
+                    <button onclick="generatePortalHealthReport()" class="btn-primary">Download Report</button>
+                </div>
+
+                <div class="disclaimer">
+                    <h4>⚠️ Important Medical Disclaimer</h4>
+                    <p>This AI analysis is for informational purposes only and should not replace professional medical advice. Please consult with a healthcare provider for proper diagnosis and treatment.</p>
+                </div>
+            `;
+
+            resultBox.style.display = 'block';
+        }
+
+        // Display fallback results in portal
+        function displayPortalFallbackResults(symptoms) {
+            const resultBox = document.getElementById('portal-resultBox');
+            
+            resultBox.innerHTML = `
+                <div class="result-header fallback">
+                    <h3>📋 Basic Health Assessment</h3>
+                    <div class="system-badge">Rule-Based Analysis</div>
+                </div>
+                
+                <div class="result-section">
+                    <h4>📈 Assessment Summary</h4>
+                    <p><strong>Symptoms Analyzed:</strong> ${symptoms.join(", ")}</p>
+                    <p><strong>Recommendation:</strong> Consult with a healthcare professional</p>
+                </div>
+
+                <div class="result-actions">
+                    <button onclick="showSection('appointments')" class="btn-primary">Book Appointment</button>
+                    <button onclick="portalPredictDisease()" class="btn-outline">Try Again</button>
+                </div>
+                
+                <div class="system-note">
+                    <p>💡 <strong>Note:</strong> Advanced ML analysis unavailable. Basic assessment provided.</p>
+                </div>
+            `;
+
+            resultBox.style.display = 'block';
+        }
+
+        // Display error in portal
+        function displayPortalErrorResult(errorMessage) {
+            const resultBox = document.getElementById('portal-resultBox');
+            
+            resultBox.innerHTML = `
+                <div class="result-header error">
+                    <h3>⚠️ Service Unavailable</h3>
+                </div>
+                
+                <div class="error-content">
+                    <p><strong>Error:</strong> ${errorMessage}</p>
+                    <p>The health prediction service is temporarily unavailable. Please try again later or consult with a healthcare professional.</p>
+                </div>
+                
+                <div class="result-actions">
+                    <button onclick="portalPredictDisease()" class="btn-outline">Try Again</button>
+                    <button onclick="showSection('appointments')" class="btn-primary">Book Appointment</button>
+                </div>
+            `;
+            
+            resultBox.style.display = 'block';
+        }
+
+        // Generate health report for portal
+        function generatePortalHealthReport() {
+            const resultData = document.getElementById('portal-resultBox').innerHTML;
+            const reportWindow = window.open('', '_blank');
+            reportWindow.document.write(`
+                <html>
+                    <head>
+                        <title>HealLink Health Report</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+                            .result-section { margin: 20px 0; padding: 15px; border-left: 4px solid #3498db; background: #f9f9f9; }
+                            .disclaimer { background: #fff3cd; padding: 15px; border: 1px solid #ffc107; border-radius: 5px; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>🏥 HealLink Health Report</h1>
+                        <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
+                        <p><strong>Patient Portal:</strong> Secure Analysis</p>
+                        <hr>
+                        ${resultData}
+                    </body>
+                </html>
+            `);
+        }
 
         async function handleLogout() {
             try {
@@ -245,11 +757,6 @@
                 console.log('Server unavailable, redirecting to login');
                 window.location.href = 'login.html';
             }
-        }
-
-        // Open health predictor in a new tab/window
-        function openHealthPredictor() {
-            window.open('../#health-predictor', '_blank');
         }
 
         // Add fade-in animations

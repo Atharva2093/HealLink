@@ -157,9 +157,21 @@ def predict_api(data: SymptomInput):
             if col in p_row and not pd.isna(p_row[col].values[0]):
                 precautions.append(p_row[col].values[0])
 
-    # Severity
-    severity = sum(sev_map.get(s.lower(), 0) for s in cleaned)
-    risk = "Low" if severity < 7 else "Medium" if severity < 14 else "High"
+    # Severity calculation with proper bounds (0-20)
+    raw_severity = sum(sev_map.get(s.lower(), 0) for s in cleaned)
+    
+    # Normalize severity to 0-20 scale based on number of symptoms and their weights
+    max_possible_severity = len(cleaned) * 7  # Assume max weight per symptom is 7
+    if max_possible_severity > 0:
+        severity = min(20, int((raw_severity / max_possible_severity) * 20))
+    else:
+        severity = 0
+    
+    # Ensure severity is at least proportional to symptom count for better UX
+    symptom_count_factor = min(len(cleaned) * 2, 10)  # 2 points per symptom, max 10
+    severity = max(severity, min(symptom_count_factor, 20))
+    
+    risk = "Low" if severity <= 6 else "Medium" if severity <= 12 else "High"
 
     return {
         "Input Symptoms": data.symptoms,

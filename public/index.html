@@ -263,41 +263,51 @@
         </section>
 
         <!-- Health Risk Predictor Section -->
-        <section id="health-predictor">
+        <section id="health-predictor" class="section-padding">
             <div class="container">
                 <div class="section-header fade-in-up">
                     <span class="section-subtitle">AI-Powered Assessment</span>
-                    <h2>Health Risk Prediction</h2>
-                    <p>Get an initial health risk assessment based on your symptoms and basic information.</p>
+                    <h2>Intelligent Health Risk Prediction</h2>
+                    <p>Get comprehensive health assessments powered by advanced machine learning technology.</p>
                 </div>
 
-                <div class="predict-form fade-in-up delay-200">
-                    <label>Enter Symptoms (comma separated):</label>
-                    <input type="text" id="symptomsInput" placeholder="e.g. chest pain, cough">
+                <div class="predictor-container fade-in-up delay-200">
+                    <div class="predict-form">
+                        <div class="form-group">
+                            <label for="symptomsInput">Describe Your Symptoms:</label>
+                            <input type="text" id="symptomsInput" placeholder="e.g. fever, cough, headache, sore throat" class="form-input">
+                            <small class="form-hint">Separate multiple symptoms with commas</small>
+                        </div>
 
-                    <label>Age:</label>
-                    <input type="number" id="ageInput" placeholder="Enter age">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="ageInput">Age:</label>
+                                <input type="number" id="ageInput" placeholder="Enter age" min="1" max="120" class="form-input">
+                            </div>
 
-                    <label>Gender:</label>
-                    <select id="genderInput">
-                        <option value="">Select gender</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                    </select>
+                            <div class="form-group">
+                                <label for="genderInput">Gender:</label>
+                                <select id="genderInput" class="form-input">
+                                    <option value="">Select gender</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
 
-                    <button id="analyzeBtn">Analyze</button>
-                </div>
+                        <button id="analyzeBtn" class="analyze-btn">
+                            <span class="btn-text">🔬 Analyze Symptoms</span>
+                            <span class="btn-loading" style="display: none;">🔄 Analyzing...</span>
+                        </button>
+                    </div>
 
-                <div id="resultBox" class="result-box" style="display: none;">
-                    <h3>Health Risk Result</h3>
-                    <p><strong>Risk Level:</strong> <span id="riskLevel"></span></p>
-                    <p><strong>Possible Conditions:</strong> <span id="conditionsList"></span></p>
-                    <p><strong>Suggested Specialist:</strong> <span id="specialist"></span></p>
-
-                    <p class="disclaimer">This is an AI-assisted assessment and not a medical diagnosis.</p>
+                    <div id="resultBox" class="result-container" style="display: none;">
+                        <!-- Results will be populated by JavaScript -->
+                    </div>
                 </div>
             </div>
+        </section>
         </section>
 
 
