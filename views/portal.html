@@ -680,11 +680,11 @@
 
                 <div class="result-actions">
                     <button onclick="showSection('appointments')" class="btn-primary">Book Appointment</button>
-                    <button onclick="portalPredictDisease()" class="btn-outline">Try Again</button>
+                    <button onclick="portalCheckMLService()" class="btn-outline">🔄 Check ML Service</button>
                 </div>
                 
                 <div class="system-note">
-                    <p>💡 <strong>Note:</strong> Advanced ML analysis unavailable. Basic assessment provided.</p>
+                    <p>💡 <strong>Note:</strong> Using basic assessment. Click "Check ML Service" to retry with advanced AI analysis.</p>
                 </div>
             `;
 
@@ -737,6 +737,33 @@
                     </body>
                 </html>
             `);
+        }
+
+        // Check ML service for portal
+        function portalCheckMLService() {
+            const symptomsInput = document.getElementById('portal-symptomsInput').value;
+            if (!symptomsInput.trim()) {
+                alert('Please enter symptoms first.');
+                return;
+            }
+
+            // Test ML service connection
+            fetch("http://127.0.0.1:8001/predict", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ symptoms: ["test"] })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('✅ ML service is now available! Running advanced analysis...');
+                    setTimeout(() => portalPredictDisease(), 1000);
+                } else {
+                    alert('❌ ML service still unavailable. Please start the service first.');
+                }
+            })
+            .catch(() => {
+                alert('❌ ML service unavailable. Please ensure it\'s running on port 8001.');
+            });
         }
 
         async function handleLogout() {

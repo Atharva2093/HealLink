@@ -327,11 +327,11 @@ function displayFallbackResults(data) {
 
         <div class="result-actions">
             <button onclick="bookAppointment('${data.recommendedSpecialist}')" class="btn-primary">Book Appointment</button>
-            <button onclick="tryMLAnalysis()" class="btn-outline">Try Advanced AI Analysis</button>
+            <button onclick="checkMLServiceAndRetry()" class="btn-outline">🔄 Check ML Service</button>
         </div>
         
         <div class="system-note">
-            <p>💡 <strong>Note:</strong> Advanced ML analysis unavailable. This is a basic rule-based assessment. For more accurate predictions, ensure the ML service is running.</p>
+            <p>💡 <strong>Note:</strong> Advanced ML analysis unavailable. Using rule-based assessment. Click "Check ML Service" to retry with full AI analysis.</p>
         </div>
         
         <div class="disclaimer">
@@ -450,14 +450,33 @@ function generateHealthReport() {
     `);
 }
 
-// Try ML analysis again
-function tryMLAnalysis() {
+// Check ML service status and retry analysis
+function checkMLServiceAndRetry() {
     const symptomsInput = document.getElementById('symptomsInput').value;
-    if (symptomsInput.trim()) {
-        predictDisease();
-    } else {
+    if (!symptomsInput.trim()) {
         showAlert('Please enter symptoms first.', 'warning');
+        return;
     }
+
+    showAlert('🔍 Checking ML service availability...', 'info');
+    
+    // Test ML service connection
+    fetch("http://127.0.0.1:8001/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ symptoms: ["test"] })
+    })
+    .then(response => {
+        if (response.ok) {
+            showAlert('✅ ML service is now available! Running advanced analysis...', 'info');
+            setTimeout(() => predictDisease(), 1000);
+        } else {
+            showAlert('❌ ML service still unavailable. Please start the service first.', 'warning');
+        }
+    })
+    .catch(() => {
+        showAlert('❌ ML service unavailable. Please ensure it\'s running on port 8001.', 'error');
+    });
 }
 
 // Contact support
