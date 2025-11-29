@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+// ================================\n// CATEGORY-SPECIFIC SAFETY LAYER\n// ================================\n\n// Symptom dictionaries (conservative medical categories)\nconst CATEGORY_SYMPTOMS = {\n    cardio: {\n        core: [\n            \"chest_pain\",\n            \"chest tightness\",\n            \"palpitations\",\n            \"shortness_of_breath\",\n            \"shortness of breath\",\n            \"radiating_pain_arm\",\n            \"radiating_pain_jaw\",\n            \"swelling_legs\",\n            \"fainting\",\n            \"syncope\",\n            \"heart_palpitations\"\n        ],\n        redFlags: [\n            \"severe_chest_pain\",\n            \"crushing_chest_pain\",\n            \"chest_pain_exertion\",\n            \"shortness_of_breath_rest\",\n            \"sweating_with_chest_pain\",\n            \"chest pain\",\n            \"severe chest pain\"\n        ]\n    },\n\n    neuro: {\n        core: [\n            \"headache\",\n            \"severe_headache\",\n            \"dizziness\",\n            \"confusion\",\n            \"blurred_vision\",\n            \"numbness\",\n            \"weakness\",\n            \"speech_difficulty\",\n            \"seizure\",\n            \"migraine\"\n        ],\n        redFlags: [\n            \"sudden_severe_headache\",\n            \"loss_of_consciousness\",\n            \"one_sided_weakness\",\n            \"one_sided_numbness\",\n            \"inability_to_speak\",\n            \"seizure\",\n            \"confusion_acute\",\n            \"severe headache\"\n        ]\n    },\n\n    respiratory: {\n        core: [\n            \"cough\",\n            \"dry_cough\",\n            \"productive_cough\",\n            \"shortness_of_breath\",\n            \"wheezing\",\n            \"chest_tightness\",\n            \"sore_throat\",\n            \"runny_nose\",\n            \"throat_irritation\",\n            \"continuous_sneezing\"\n        ],\n        redFlags: [\n            \"shortness_of_breath_rest\",\n            \"unable_to_speak_full_sentences\",\n            \"blue_lips\",\n            \"stridor\",\n            \"severe shortness of breath\"\n        ]\n    },\n\n    gi: {\n        core: [\n            \"stomach_pain\",\n            \"abdominal_pain\",\n            \"nausea\",\n            \"vomiting\",\n            \"diarrhoea\",\n            \"diarrhea\",\n            \"heartburn\",\n            \"bloating\",\n            \"acidity\"\n        ],\n        redFlags: [\n            \"severe_abdominal_pain\",\n            \"blood_in_vomit\",\n            \"blood_in_stool\",\n            \"black_stool\",\n            \"persistent_vomiting\",\n            \"severe stomach pain\"\n        ]\n    }\n};\n\n// Category analysis function\nfunction analyzeCategories(normalizedSymptoms) {\n    const scores = {\n        cardio: 0,\n        neuro: 0,\n        respiratory: 0,\n        gi: 0\n    };\n\n    const redFlagHits = {\n        cardio: false,\n        neuro: false,\n        respiratory: false,\n        gi: false\n    };\n\n    for (const s of normalizedSymptoms) {\n        const symptom = s.toLowerCase().trim();\n        \n        for (const [cat, def] of Object.entries(CATEGORY_SYMPTOMS)) {\n            // Check core symptoms\n            if (def.core.some(core => symptom.includes(core) || core.includes(symptom))) {\n                scores[cat] += 1; // basic weight\n            }\n            \n            // Check red flags\n            if (def.redFlags.some(flag => symptom.includes(flag) || flag.includes(symptom))) {\n                scores[cat] += 3; // strong boost\n                redFlagHits[cat] = true;\n            }\n        }\n    }\n\n    // Determine dominant category\n    let dominantCategory = null;\n    let maxScore = 0;\n    for (const [cat, score] of Object.entries(scores)) {\n        if (score > maxScore) {\n            maxScore = score;\n            dominantCategory = score > 0 ? cat : null;\n        }\n    }\n\n    return {\n        scores,\n        redFlagHits,\n        dominantCategory,\n        hasAnyRedFlag: Object.values(redFlagHits).some(v => v)\n    };\n}\n\n// Rule-based safety layer\nfunction applyRuleBasedLayer(normalizedSymptoms, mlResult) {\n    const categoryAnalysis = analyzeCategories(normalizedSymptoms);\n\n    let finalRiskLevel = mlResult[\"Risk Level\"] || \"Low\";\n    let finalSeverity = mlResult[\"Severity Score\"] || 0;\n    let flags = [];\n    let triageAction = \"monitor_and_consult\";\n    let emergencyAlert = false;\n\n    // 1) Emergency override based on red flags\n    if (categoryAnalysis.hasAnyRedFlag) {\n        finalRiskLevel = \"High\";\n        finalSeverity = Math.max(finalSeverity, 17); // push near upper bound\n        triageAction = \"urgent_medical_evaluation\";\n        emergencyAlert = true;\n\n        if (categoryAnalysis.redFlagHits.cardio) {\n            flags.push(\"⚠️ Possible cardiac emergency symptoms detected\");\n        }\n        if (categoryAnalysis.redFlagHits.neuro) {\n            flags.push(\"⚠️ Possible neurological emergency symptoms detected\");\n        }\n        if (categoryAnalysis.redFlagHits.respiratory) {\n            flags.push(\"⚠️ Possible respiratory emergency symptoms detected\");\n        }\n        if (categoryAnalysis.redFlagHits.gi) {\n            flags.push(\"⚠️ Possible gastrointestinal emergency symptoms detected\");\n        }\n    }\n\n    // 2) Category mismatch correction\n    if (!categoryAnalysis.hasAnyRedFlag && categoryAnalysis.dominantCategory) {\n        const confidence = mlResult[\"Confidence\"] || 0;\n        \n        // If ML confidence is low, trust category-based risk more\n        if (confidence < 0.25) {\n            if ([\"cardio\", \"neuro\", \"respiratory\"].includes(categoryAnalysis.dominantCategory)) {\n                if (finalRiskLevel === \"Low\") finalRiskLevel = \"Medium\";\n                if (finalRiskLevel === \"Medium\") finalRiskLevel = \"High\";\n                finalSeverity = Math.max(finalSeverity, 13);\n                flags.push(`🔍 Risk adjusted based on ${categoryAnalysis.dominantCategory} symptoms`);\n            }\n        }\n\n        // Add category-specific guidance\n        const categoryMap = {\n            cardio: \"Consider consulting a cardiologist\",\n            neuro: \"Consider consulting a neurologist\", \n            respiratory: \"Consider consulting a pulmonologist\",\n            gi: \"Consider consulting a gastroenterologist\"\n        };\n        \n        if (categoryMap[categoryAnalysis.dominantCategory]) {\n            flags.push(`💡 ${categoryMap[categoryAnalysis.dominantCategory]}`);\n        }\n    }\n\n    // 3) Single symptom handling\n    if (normalizedSymptoms.length === 1) {\n        flags.push(\"ℹ️ Limited symptoms provided - consider comprehensive evaluation\");\n        const confidence = mlResult[\"Confidence\"] || 0;\n        if (confidence < 0.2) {\n            triageAction = \"general_checkup_recommended\";\n        }\n    }\n\n    // 4) Low confidence warning\n    if ((mlResult[\"Confidence\"] || 0) < 0.15) {\n        flags.push(\"⚠️ Low prediction confidence - seek professional medical advice\");\n    }\n\n    return {\n        ...mlResult,\n        categoryAnalysis,\n        \"Risk Level\": finalRiskLevel,\n        \"Severity Score\": Math.min(finalSeverity, 20), // ensure cap at 20\n        safetyFlags: flags,\n        triageAction,\n        emergencyAlert\n    };\n}\n\n// ================================\n//      MAIN SCRIPT FUNCTIONS  \n// ================================\n\ndocument.addEventListener('DOMContentLoaded', () => {
     // Header Scroll Effect
     const header = document.querySelector('.header');
 
@@ -153,25 +153,43 @@ function setLoadingState(isLoading) {
 // Display comprehensive ML model results
 function displayMLResults(data, age, gender) {
     const resultBox = document.getElementById('resultBox');
-    const specialistRecommendation = getSpecialistForDisease(data["Predicted Disease"]);
+    
+    // Apply rule-based safety layer
+    const enhancedData = applyRuleBasedLayer(data["Corrected Symptoms"] || [], data);
+    
+    const specialistRecommendation = getSpecialistForDisease(enhancedData["Predicted Disease"]);
+
+    // Emergency alert styling
+    const emergencyClass = enhancedData.emergencyAlert ? 'emergency-alert' : '';
+    const emergencyIcon = enhancedData.emergencyAlert ? '🚨' : '🎯';
 
     resultBox.innerHTML = `
-        <div class="result-header">
-            <h3>🎯 AI Health Analysis Complete</h3>
-            <div class="confidence-badge">Confidence: ${(data["Confidence"] * 100).toFixed(1)}%</div>
+        <div class="result-header ${emergencyClass}">
+            <h3>${emergencyIcon} AI Health Analysis Complete</h3>
+            <div class="confidence-badge">Confidence: ${(enhancedData["Confidence"] * 100).toFixed(1)}%</div>
+            ${enhancedData.emergencyAlert ? '<div class="emergency-badge">⚠️ URGENT EVALUATION RECOMMENDED</div>' : ''}
         </div>
         
         <div class="result-section">
             <h4>🔬 Primary Prediction</h4>
-            <p><strong>Condition:</strong> ${data["Predicted Disease"]}</p>
-            <p><strong>Risk Level:</strong> <span class="risk-${data["Risk Level"].toLowerCase()}">${data["Risk Level"]}</span></p>
-            <p><strong>Severity Score:</strong> ${data["Severity Score"]}/20</p>
+            <p><strong>Condition:</strong> ${enhancedData["Predicted Disease"]}</p>
+            <p><strong>Risk Level:</strong> <span class="risk-${enhancedData["Risk Level"].toLowerCase()}">${enhancedData["Risk Level"]}</span></p>
+            <p><strong>Severity Score:</strong> ${enhancedData["Severity Score"]}/20</p>
+            ${enhancedData.triageAction ? `<p><strong>Recommended Action:</strong> ${enhancedData.triageAction.replace(/_/g, ' ').toUpperCase()}</p>` : ''}
         </div>
+
+        ${enhancedData.safetyFlags && enhancedData.safetyFlags.length > 0 ? `
+        <div class="result-section safety-flags">
+            <h4>🛡️ Safety Assessment</h4>
+            <ul class="safety-flags-list">
+                ${enhancedData.safetyFlags.map(flag => `<li>${flag}</li>`).join("")}
+            </ul>
+        </div>` : ''}
 
         <div class="result-section">
             <h4>📖 Medical Information</h4>
             <div class="description-text">
-                ${data["Description"]}
+                ${enhancedData["Description"]}
             </div>
         </div>
 
@@ -186,22 +204,24 @@ function displayMLResults(data, age, gender) {
         <div class="result-section">
             <h4>🛡️ Recommended Precautions</h4>
             <ul class="precautions-list">
-                ${data["Precautions"].map(p => `<li>${p}</li>`).join("")}
+                ${enhancedData["Precautions"].map(p => `<li>${p}</li>`).join("")}
             </ul>
         </div>
 
         <div class="result-section">
             <h4>🔍 Symptom Analysis</h4>
             <div class="symptom-analysis">
-                <p><strong>Your Input:</strong> ${data["Input Symptoms"].join(", ")}</p>
-                <p><strong>AI Processed:</strong> ${data["Corrected Symptoms"].join(", ")}</p>
+                <p><strong>Your Input:</strong> ${enhancedData["Input Symptoms"].join(", ")}</p>
+                <p><strong>AI Processed:</strong> ${enhancedData["Corrected Symptoms"].join(", ")}</p>
+                ${enhancedData.categoryAnalysis && enhancedData.categoryAnalysis.dominantCategory ? 
+                    `<p><strong>Primary Category:</strong> ${enhancedData.categoryAnalysis.dominantCategory.toUpperCase()}</p>` : ''}
             </div>
         </div>
 
         <div class="result-section">
             <h4>📊 Alternative Possibilities</h4>
             <div class="alternatives-list">
-                ${data["Top_3"].map((item, index) => 
+                ${enhancedData["Top_3"].map((item, index) => 
                     `<div class="alternative-item ${index === 0 ? 'primary' : ''}">
                         <span class="condition">${item[0]}</span>
                         <span class="probability">${(item[1] * 100).toFixed(1)}%</span>
@@ -211,13 +231,17 @@ function displayMLResults(data, age, gender) {
         </div>
 
         <div class="result-actions">
-            <button onclick="bookAppointment('${specialistRecommendation}')" class="btn-primary">Book Appointment</button>
+            ${enhancedData.emergencyAlert ? 
+                '<button onclick="handleEmergencyAction()" class="btn-emergency">🚨 Seek Immediate Medical Attention</button>' :
+                '<button onclick="bookAppointment(\''+specialistRecommendation+'\')" class="btn-primary">Book Appointment</button>'
+            }
             <button onclick="generateHealthReport()" class="btn-outline">Download Report</button>
         </div>
 
         <div class="disclaimer">
             <h4>⚠️ Important Medical Disclaimer</h4>
-            <p>This AI analysis is for informational purposes only and should not replace professional medical advice. Please consult with a healthcare provider for proper diagnosis and treatment. In case of emergency, contact your local emergency services immediately.</p>
+            <p><strong>This is an AI-based risk estimate, not a medical diagnosis.</strong> This analysis is for informational purposes only and should never replace professional medical advice. Always consult with a qualified healthcare provider for proper diagnosis and treatment. In case of emergency symptoms, contact your local emergency services immediately.</p>
+            ${enhancedData.emergencyAlert ? '<p class="emergency-text"><strong>🚨 EMERGENCY ALERT: The symptoms you\'ve reported may indicate a serious medical condition requiring immediate attention. Please seek emergency medical care without delay.</strong></p>' : ''}
         </div>
     `;
 
@@ -479,9 +503,29 @@ function checkMLServiceAndRetry() {
     });
 }
 
+// Emergency action handler
+function handleEmergencyAction() {
+    const emergencyNumbers = {
+        'US': '911',
+        'UK': '999',
+        'EU': '112',
+        'AU': '000',
+        'IN': '102'
+    };
+    
+    const message = `🚨 EMERGENCY MEDICAL ATTENTION NEEDED\n\nThe symptoms you've reported may indicate a serious medical condition.\n\nPlease:\n1. Call emergency services immediately\n2. Do not drive yourself to the hospital\n3. Have someone accompany you\n\nEmergency Numbers:\n• US/Canada: 911\n• UK: 999\n• Europe: 112\n• Australia: 000\n• India: 102\n\nThis is not a diagnosis, but immediate medical evaluation is recommended.`;
+    
+    alert(message);
+    
+    // Also try to open emergency services page
+    if (confirm('Would you like to open emergency services information for your area?')) {
+        window.open('https://en.wikipedia.org/wiki/List_of_emergency_telephone_numbers', '_blank');
+    }
+}
+
 // Contact support
 function contactSupport() {
-    window.open('mailto:support@heallink.com?subject=Health Prediction Service Issue', '_blank');
+    window.open('mailto:support@heallink.com?subject=Health Prediction Service Issue&body=Please describe your issue with the health prediction system.', '_blank');
 }
 
 // Helper function to get specialist based on disease
@@ -546,4 +590,58 @@ function getSpecialistForDisease(disease) {
     
     const normalizedDisease = disease.toLowerCase().trim();
     return diseaseSpecialistMap[normalizedDisease] || 'General Physician';
+}
+
+// Emergency action handler
+function handleEmergencyAction() {
+    const emergencyModal = document.createElement('div');
+    emergencyModal.className = 'emergency-modal';
+    emergencyModal.innerHTML = `
+        <div class="emergency-modal-content">
+            <div class="emergency-header">
+                <h2>🚨 Emergency Medical Situation</h2>
+                <span class="close-emergency" onclick="closeEmergencyModal()">&times;</span>
+            </div>
+            <div class="emergency-body">
+                <p><strong>Based on your symptoms, immediate medical attention is strongly recommended.</strong></p>
+                <div class="emergency-options">
+                    <h3>Take Action Now:</h3>
+                    <button onclick="callEmergencyServices()" class="btn-emergency-action">
+                        📞 Call Emergency Services
+                    </button>
+                    <button onclick="findNearestER()" class="btn-emergency-action">
+                        🏥 Find Nearest Emergency Room
+                    </button>
+                    <button onclick="contactPrimaryPhysician()" class="btn-emergency-action">
+                        👨‍⚕️ Contact Primary Physician
+                    </button>
+                </div>
+                <div class="emergency-warning">
+                    <p>⚠️ <strong>Do not delay seeking medical care.</strong> These symptoms may indicate a serious condition requiring immediate evaluation.</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(emergencyModal);
+    emergencyModal.style.display = 'flex';
+}
+
+function closeEmergencyModal() {
+    const modal = document.querySelector('.emergency-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function callEmergencyServices() {
+    alert('Please dial your local emergency number:\n\n• US: 911\n• UK: 999\n• EU: 112\n• Australia: 000');
+}
+
+function findNearestER() {
+    window.open('https://www.google.com/maps/search/emergency+room+near+me', '_blank');
+}
+
+function contactPrimaryPhysician() {
+    alert('Please contact your primary care physician immediately. If they are unavailable, consider visiting an urgent care center or emergency room.');
 }
