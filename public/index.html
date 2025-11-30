@@ -12,8 +12,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <li><a href="predictor.html">Health Predictor</a></li>
-
 </head>
 
 <body>
@@ -296,6 +294,46 @@
                             </div>
                         </div>
 
+                        <div class="form-group">
+                            <label for="category">Disease Category (Optional):</label>
+                            <input 
+                                list="categories" 
+                                id="category" 
+                                placeholder="Start typing a category..."
+                                class="form-input"
+                            />
+                            <datalist id="categories">
+                                <!-- CORE MEDICAL CATEGORIES -->
+                                <option value="cardio">Heart & Cardiovascular</option>
+                                <option value="neuro">Brain & Neurology</option>
+                                <option value="respiratory">Breathing & Lungs</option>
+                                <option value="gi">Gastrointestinal</option>
+                                <option value="dermat">Skin & Dermatology</option>
+                                <option value="allergy">Allergic Reactions</option>
+                                <option value="endocrine">Hormonal & Metabolic</option>
+                                <option value="general">General Medicine</option>
+
+                                <!-- EXTENDED CATEGORIES -->
+                                <option value="renal">Kidney & Renal</option>
+                                <option value="urology">Urological</option>
+                                <option value="gynecology">Women's Health</option>
+                                <option value="pediatrics">Children's Health</option>
+                                <option value="orthopedic">Bones & Joints</option>
+                                <option value="rheumatology">Rheumatology</option>
+                                <option value="hematology">Blood Disorders</option>
+                                <option value="oncology">Cancer Care</option>
+                                <option value="ent">Ear, Nose & Throat</option>
+                                <option value="ophthalmology">Eye Care</option>
+                                <option value="psychiatry">Mental Health</option>
+                                <option value="immunology">Immune System</option>
+                                <option value="infectious_disease">Infections</option>
+                                <option value="metabolic">Metabolic Disorders</option>
+                                <option value="toxicology">Poisoning & Toxins</option>
+                                <option value="emergency">Emergency Medicine</option>
+                            </datalist>
+                            <small class="form-hint">Help us provide more accurate recommendations</small>
+                        </div>
+
                         <button id="analyzeBtn" class="analyze-btn">
                             <span class="btn-text">🔬 Analyze Symptoms</span>
                             <span class="btn-loading" style="display: none;">🔄 Analyzing...</span>
@@ -308,8 +346,6 @@
                 </div>
             </div>
         </section>
-        </section>
-
 
         <!-- CTA Section -->
         <section class="cta-section">
